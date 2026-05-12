@@ -1,0 +1,81 @@
+/* ============================================================
+   simulador.css — Estilos exclusivos del simulador
+   Proyecto: Simulador de Estadística Inferencial
+   ============================================================ */
+
+/* ── Layout principal: dos columnas ──────────────────────── */
+.simulador-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* ── Panel izquierdo: controles ───────────────────────────── */
+.panel-controles {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: 24px; /* se queda fijo mientras haces scroll en la derecha */
+}
+
+/* ── Panel derecho: curva + métricas + historial ──────────── */
+.panel-resultados {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Bloques internos con título de sección ───────────────── */
+.bloque {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xl);
+  padding: 20px 24px;
+}
+
+.bloque__titulo {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* ── Separador interno dentro de un panel ─────────────────── */
+.separador {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 0;
+}
+
+/* ── Botón guardar ────────────────────────────────────────── */
+.btn-guardar-wrap {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-guardar-wrap .btn {
+  flex: 1;
+}
+
+/* ── Responsive: una columna en móvil ─────────────────────── */
+@media (max-width: 768px) {
+  .simulador-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .panel-controles {
+    position: static;
+  }
+}

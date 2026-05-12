@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ejercicios — Estadística Inferencial</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/componentes.css" />
+  <link rel="stylesheet" href="../css/ejercicios.css" />
+</head>
+<body>
+
+  <!-- ── Navbar ──────────────────────────────────────────────── -->
+  <nav class="navbar">
+    <a href="../index.html" class="navbar__back">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Inicio
+    </a>
+    <span class="navbar__title">Ejercicios de práctica</span>
+  </nav>
+
+  <!-- ── Contenido principal ─────────────────────────────────── -->
+  <main class="ejercicios-wrap">
+
+    <!-- ── Pestañas ────────────────────────────────────────────── -->
+    <div class="tabs">
+      <button class="tab activo" data-tab="ejercicios">Ejercicios</button>
+      <button class="tab" data-tab="progreso">Mi progreso</button>
+    </div>
+
+    <!-- ══ PESTAÑA 1: Ejercicios ══════════════════════════════════ -->
+    <div class="tab-panel activo" id="panel-ejercicios">
+
+      <!-- Cabecera: badge del tipo + botón nuevo ejercicio -->
+      <div class="ejercicio-header">
+        <span class="badge badge--z" id="badge-tipo">Prueba Z</span>
+        <button class="btn btn--ghost" id="btn-nuevo" style="font-size:0.85rem; padding:8px 16px;">
+          Nuevo ejercicio
+        </button>
+      </div>
+
+      <!-- Enunciado del problema -->
+      <div class="enunciado" id="enunciado">
+        Cargando ejercicio...
+      </div>
+
+      <!-- 4 opciones de respuesta en grilla 2x2 -->
+      <div class="opciones" id="opciones" style="margin-top: 16px;">
+        <button class="opcion" id="op-0"></button>
+        <button class="opcion" id="op-1"></button>
+        <button class="opcion" id="op-2"></button>
+        <button class="opcion" id="op-3"></button>
+      </div>
+
+      <!-- Botones: verificar y nuevo -->
+      <div class="ejercicio-acciones">
+        <button class="btn btn--primary" id="btn-verificar" disabled>
+          Verificar respuesta
+        </button>
+      </div>
+
+      <!-- Feedback: correcto o incorrecto -->
+      <div class="feedback" id="feedback"></div>
+
+      <!-- Curva del ejercicio (aparece después de verificar) -->
+      <div class="canvas-wrapper" id="curva-wrap" style="margin-top:20px; display:none;">
+        <canvas id="curva-ejercicio"></canvas>
+      </div>
+
+      <!-- Pasos del procedimiento (aparecen después de verificar) -->
+      <div class="pasos-wrap" id="pasos-wrap" style="display:none;">
+        <p class="bloque__titulo" style="margin-bottom:12px;">Procedimiento paso a paso</p>
+        <div class="pasos visible" id="pasos"></div>
+      </div>
+
+    </div>
+
+    <!-- ══ PESTAÑA 2: Mi progreso ═════════════════════════════════ -->
+    <div class="tab-panel" id="panel-progreso">
+
+      <!-- Métricas globales: respondidos, correctos, precisión -->
+      <div class="metricas progreso-metricas">
+        <div class="metrica">
+          <div class="metrica__label">Respondidos</div>
+          <div class="metrica__valor" id="prog-total">0</div>
+        </div>
+        <div class="metrica">
+          <div class="metrica__label">Correctos</div>
+          <div class="metrica__valor" id="prog-correctos">0</div>
+        </div>
+        <div class="metrica">
+          <div class="metrica__label">Precisión global</div>
+          <div class="metrica__valor" id="prog-precision">—</div>
+        </div>
+        <div class="metrica">
+          <div class="metrica__label">Último tema</div>
+          <div class="metrica__valor" id="prog-tema">—</div>
+        </div>
+      </div>
+
+      <!-- Barra de precisión visual -->
+      <div style="margin-bottom: 24px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span class="text-sm text-muted">Precisión global</span>
+          <span class="text-sm font-mono" id="prog-precision-pct">0%</span>
+        </div>
+        <div class="barra-progreso">
+          <div class="barra-progreso__fill" id="barra-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- ── Análisis 1: Descriptivo ─────────────────────────── -->
+      <div class="analisis-card">
+        <p class="analisis-card__titulo">Análisis 1 — Descriptivo</p>
+        <p class="analisis-card__pregunta">¿Cómo es tu rendimiento por tema?</p>
+        <div id="analisis-1">
+          <p class="analisis-aviso">Responde al menos 1 ejercicio para ver este análisis.</p>
+        </div>
+      </div>
+
+      <!-- ── Análisis 2: Prueba de hipótesis del aprendizaje ─── -->
+      <div class="analisis-card">
+        <p class="analisis-card__titulo">Análisis 2 — Prueba de hipótesis</p>
+        <p class="analisis-card__pregunta">¿Respondes mejor que el azar?</p>
+        <p class="text-sm text-muted" style="margin-bottom:16px;">
+          H₀: p = 0.50 (azar) · H₁: p > 0.50 (aprendizaje real) · α = 0.05
+        </p>
+        <div id="analisis-2">
+          <p class="analisis-aviso">Responde al menos 10 ejercicios para que el análisis sea válido.</p>
+        </div>
+      </div>
+
+      <!-- ── Análisis 3: Intervalo de confianza ─────────────── -->
+      <div class="analisis-card">
+        <p class="analisis-card__titulo">Análisis 3 — Intervalo de confianza</p>
+        <p class="analisis-card__pregunta">¿Entre qué valores está tu verdadera precisión?</p>
+        <div id="analisis-3">
+          <p class="analisis-aviso">Responde al menos 10 ejercicios para ver este análisis.</p>
+        </div>
+      </div>
+
+      <!-- ── Análisis 4: Comparación por tipo ───────────────── -->
+      <div class="analisis-card">
+        <p class="analisis-card__titulo">Análisis 4 — Comparación por tipo</p>
+        <p class="analisis-card__pregunta">¿Hay diferencia entre tu rendimiento en Prueba Z vs Intervalos de confianza?</p>
+        <div id="analisis-4">
+          <p class="analisis-aviso">Responde al menos 8 ejercicios de cada tipo para activar este análisis.</p>
+        </div>
+      </div>
+
+      <!-- ── Historial de ejercicios ─────────────────────────── -->
+      <div class="analisis-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <p class="analisis-card__titulo" style="margin-bottom:0;">Historial reciente</p>
+          <button id="btn-limpiar" class="btn btn--ghost" style="font-size:0.8rem; padding:6px 12px;">
+            Limpiar
+          </button>
+        </div>
+        <div class="historial" id="historial-lista">
+          <p class="analisis-aviso">Sin ejercicios respondidos aún.</p>
+        </div>
+      </div>
+
+    </div>
+    <!-- fin panel-progreso -->
+
+  </main>
+
+  <!-- Scripts en orden: estadistica → curva → ejercicios -->
+  <script src="../js/estadistica.js"></script>
+  <script src="../js/curva.js"></script>
+  <script src="../js/ejercicios.js"></script>
+
+</body>
+</html>

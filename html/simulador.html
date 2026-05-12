@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador — Prueba Z</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/componentes.css" />
+  <link rel="stylesheet" href="../css/simulador.css" />
+</head>
+<body>
+
+  <!-- ── Navbar ──────────────────────────────────────────── -->
+  <nav class="navbar">
+    <a href="../index.html" class="navbar__back">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Inicio
+    </a>
+    <span class="navbar__title">Simulador — Prueba Z</span>
+  </nav>
+
+  <!-- ── Grid principal ──────────────────────────────────── -->
+  <main class="simulador-grid">
+
+    <!-- ══ COLUMNA IZQUIERDA: controles ══════════════════════ -->
+    <aside class="panel-controles">
+
+      <!-- Sliders de parámetros -->
+      <div>
+        <p class="bloque__titulo">Parámetros</p>
+
+        <div style="display:flex; flex-direction:column; gap:20px;">
+
+          <!-- μ₀: media hipotética -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">μ₀ — Media hipotética</span>
+              <span class="slider-valor" id="v-mu0">100</span>
+            </div>
+            <input type="range" id="sl-mu0" min="80" max="120" value="100" step="1" />
+          </div>
+
+          <!-- x̄: media muestral -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">x̄ — Media muestral</span>
+              <span class="slider-valor" id="v-xbar">104</span>
+            </div>
+            <input type="range" id="sl-xbar" min="80" max="120" value="104" step="1" />
+          </div>
+
+          <!-- σ: desviación estándar -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">σ — Desviación estándar</span>
+              <span class="slider-valor" id="v-sigma">15</span>
+            </div>
+            <input type="range" id="sl-sigma" min="5" max="30" value="15" step="1" />
+          </div>
+
+          <!-- n: tamaño de muestra -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">n — Tamaño de muestra</span>
+              <span class="slider-valor" id="v-n">36</span>
+            </div>
+            <input type="range" id="sl-n" min="10" max="200" value="36" step="1" />
+          </div>
+
+        </div>
+      </div>
+
+      <div class="separador"></div>
+
+      <!-- Alpha: nivel de significancia -->
+      <div>
+        <p class="bloque__titulo">Nivel de significancia (α)</p>
+        <div class="pills">
+          <button class="pill pill-alpha" data-val="0.01">α = 0.01</button>
+          <button class="pill pill-alpha activo" data-val="0.05">α = 0.05</button>
+          <button class="pill pill-alpha" data-val="0.10">α = 0.10</button>
+        </div>
+      </div>
+
+      <div class="separador"></div>
+
+      <!-- Tipo de prueba -->
+      <div>
+        <p class="bloque__titulo">Tipo de prueba</p>
+        <div class="pills">
+          <button class="pill pill-tail activo" data-val="bilateral">Bilateral</button>
+          <button class="pill pill-tail" data-val="izquierda">Cola izq.</button>
+          <button class="pill pill-tail" data-val="derecha">Cola der.</button>
+        </div>
+      </div>
+
+      <div class="separador"></div>
+
+      <!-- Botones de acción -->
+      <div class="btn-guardar-wrap">
+        <button id="btn-guardar" class="btn btn--primary">
+          Guardar en historial
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ══ COLUMNA DERECHA: resultados ═══════════════════════ -->
+    <section class="panel-resultados">
+
+      <!-- Curva normal -->
+      <div class="bloque">
+        <p class="bloque__titulo">Distribución normal — Región de rechazo</p>
+        <div class="canvas-wrapper">
+          <canvas id="curva-canvas" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- Métricas -->
+      <div class="bloque">
+        <p class="bloque__titulo">Resultados del cálculo</p>
+        <div class="metricas">
+          <div class="metrica">
+            <div class="metrica__label">Estadístico Z</div>
+            <div class="metrica__valor" id="m-z">—</div>
+          </div>
+          <div class="metrica">
+            <div class="metrica__label">p-valor</div>
+            <div class="metrica__valor" id="m-pval">—</div>
+          </div>
+          <div class="metrica">
+            <div class="metrica__label">Z crítico</div>
+            <div class="metrica__valor" id="m-zc">—</div>
+          </div>
+          <div class="metrica">
+            <div class="metrica__label">Error estándar</div>
+            <div class="metrica__valor" id="m-se">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Veredicto -->
+      <div id="veredicto" class="veredicto veredicto--neutro">
+        <span class="veredicto__icono" id="veredicto-icono">◦</span>
+        <span id="veredicto-texto">Ajusta los parámetros para ver el resultado</span>
+      </div>
+
+      <!-- Historial -->
+      <div class="bloque">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <p class="bloque__titulo" style="margin-bottom:0">Historial de simulaciones</p>
+          <button id="btn-limpiar" class="btn btn--ghost" style="font-size:0.8rem; padding:6px 12px;">
+            Limpiar
+          </button>
+        </div>
+        <div class="historial" id="historial-lista">
+          <!-- Se llena con simulador.js -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Scripts — orden importa: estadistica → curva → simulador -->
+  <script src="../js/estadistica.js"></script>
+  <script src="../js/curva.js"></script>
+  <script src="../js/simulador.js"></script>
+
+</body>
+</html>
