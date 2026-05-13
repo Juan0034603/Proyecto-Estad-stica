@@ -34,8 +34,8 @@ function cambiarModo(modo) {
   modoActual = modo;
   const esRegistro = modo === 'registro';
 
-  document.getElementById('campo-nombre').style.display  = esRegistro ? 'flex' : 'none';
-  document.getElementById('btn-submit').textContent      = esRegistro ? 'Crear cuenta' : 'Iniciar sesión';
+  document.getElementById('campo-nombre').style.display = esRegistro ? 'flex' : 'none';
+  document.getElementById('btn-submit').textContent     = esRegistro ? 'Crear cuenta' : 'Iniciar sesión';
 
   document.getElementById('btn-modo-login').classList.toggle('activo',    modo === 'login');
   document.getElementById('btn-modo-registro').classList.toggle('activo', modo === 'registro');
@@ -77,8 +77,8 @@ async function registrar(nombre, email, password) {
     });
     const dataSignup = await resSignup.json();
 
-    if (dataSignup.error) {
-      mostrarError(traducirError(dataSignup.error.message));
+    if (!resSignup.ok || dataSignup.error) {
+      mostrarError(traducirError(dataSignup.error?.message || dataSignup.error));
       return;
     }
 
@@ -90,7 +90,7 @@ async function registrar(nombre, email, password) {
     });
     const dataLogin = await resLogin.json();
 
-    if (dataLogin.error) {
+    if (!resLogin.ok || dataLogin.error) {
       mostrarExito('¡Cuenta creada! Ahora inicia sesión.');
       cambiarModo('login');
       return;
@@ -109,7 +109,7 @@ async function registrar(nombre, email, password) {
     /* 4 — Guardar sesión */
     guardarSesion({ token, usuarioId, email, nombre });
 
-    /* 5 — Limpiar campos y redirigir */
+    /* 5 — Limpiar y redirigir */
     limpiarCampos();
     window.location.href = RUTA_INICIO;
 
@@ -131,8 +131,9 @@ async function iniciarSesion(email, password) {
     });
     const data = await res.json();
 
-    if (data.error) {
-      mostrarError(traducirError(data.error_description || data.error));
+    /* Verificar error ANTES de tocar data.user */
+    if (!res.ok || data.error) {
+      mostrarError(traducirError(data.error_description || data.error?.message || data.error));
       return;
     }
 
@@ -166,7 +167,6 @@ function cerrarSesion() {
   window.location.href = RUTA_LOGIN;
 }
 
-/* Llámala al inicio de simulador.html y ejercicios.html */
 function protegerPagina() {
   if (!localStorage.getItem('sb_token')) window.location.href = RUTA_LOGIN;
 }
