@@ -355,10 +355,15 @@ function renderAnalisis2(lista, n, correctos, pHat) {
   const zc   = E.calcularZcritico(0.05, 'derecha'); // 1.6449
   const rech = E.tomarDecision(pval, 0.05);
 
-  const conclusion = rech
-    ? '✓ Hay evidencia estadística de aprendizaje real. Respondes mejor que el azar.'
-    : '◦ No hay evidencia suficiente aún. Sigue practicando.';
-
+const conclusion = rech
+    ? '✓ Estás respondiendo significativamente mejor que el azar. Hay evidencia real de aprendizaje.'
+    : pHat >= 0.60
+      ? '◦ Tu precisión es buena, pero necesitas más ejercicios para confirmar el aprendizaje.'
+      : pHat >= 0.50
+        ? '◦ Estás por encima del azar, pero sin suficiente evidencia estadística aún.'
+        : pHat >= 0.35
+          ? '⚠ Estás respondiendo cerca del azar. Revisa los procedimientos de cada tema.'
+          : '✗ Estás por debajo del azar. Es momento de repasar los conceptos desde cero.';
   el.innerHTML = `
     <div class="metricas" style="margin-bottom:16px;">
       <div class="metrica"><div class="metrica__label">p̂</div><div class="metrica__valor">${(pHat*100).toFixed(1)}%</div></div>
