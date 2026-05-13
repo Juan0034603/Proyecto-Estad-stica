@@ -1,18 +1,27 @@
 /* ============================================================
    auth.js — Autenticación con Supabase
    Maneja: registro, login, logout y protección de páginas
-   Se carga en: index.html (login), inicio.html, simulador.html,
-                ejercicios.html
    ============================================================ */
 
 const SUPABASE_URL = 'https://pidjkietkwddeqxpvonv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_khALbTOTOfNwZJGOi8AiGg_qOikqQW7';
 
-const HEADERS = {
-  'apikey':        SUPABASE_KEY,
-  'Authorization': `Bearer ${SUPABASE_KEY}`,
-  'Content-Type':  'application/json',
+/* Cabeceras base — sin token de usuario */
+const HEADERS_BASE = {
+  'apikey':       SUPABASE_KEY,
+  'Content-Type': 'application/json',
 };
+
+/* Cabeceras con token de usuario autenticado
+   Se construyen dinámicamente con el token real */
+function headersConToken(token) {
+  return {
+    'apikey':        SUPABASE_KEY,
+    'Authorization': `Bearer ${token}`,
+    'Content-Type':  'application/json',
+    'Prefer':        'return=minimal',
+  };
+}
 
 /* Modo actual del formulario: 'login' o 'registro' */
 let modoActual = 'login';
@@ -23,22 +32,14 @@ let modoActual = 'login';
 
 /* ── cambiarModo(modo) ────────────────────────────────────────
    Muestra u oculta el campo nombre según el modo.
-   Cambia el texto del botón y el toggle activo.
 ─────────────────────────────────────────────────────────────── */
 function cambiarModo(modo) {
   modoActual = modo;
-
   const esRegistro = modo === 'registro';
 
-  /* Solo el nombre es exclusivo del registro */
   document.getElementById('campo-nombre').style.display = esRegistro ? 'flex' : 'none';
+  document.getElementById('btn-submit').textContent     = esRegistro ? 'Crear cuenta' : 'Iniciar sesión';
 
-  /* Texto del botón */
-  document.getElementById('btn-submit').textContent = esRegistro
-    ? 'Crear cuenta'
-    : 'Iniciar sesión';
-
-  /* Toggle visual */
   document.getElementById('btn-modo-login').classList.toggle('activo',    modo === 'login');
   document.getElementById('btn-modo-registro').classList.toggle('activo', modo === 'registro');
 
@@ -46,7 +47,7 @@ function cambiarModo(modo) {
 }
 
 /* ── submitFormulario() ───────────────────────────────────────
-   Valida los campos y llama a registrar() o iniciarSesion()
+   Valida campos y llama a registrar() o iniciarSesion()
 ─────────────────────────────────────────────────────────────── */
 async function submitFormulario() {
   const email    = document.getElementById('input-email').value.trim();
@@ -59,14 +60,11 @@ async function submitFormulario() {
 
   if (modoActual === 'registro') {
     const nombre = document.getElementById('input-nombre').value.trim();
-
     if (!nombre) {
       mostrarError('Por favor escribe tu nombre completo.');
       return;
     }
-
     await registrar(nombre, email, password);
-
   } else {
     await iniciarSesion(email, password);
   }
@@ -77,53 +75,75 @@ async function submitFormulario() {
    ============================================================ */
 
 /* ── registrar(nombre, email, password) ───────────────────────
-   Paso 1: crea el usuario en Supabase Auth
-   Paso 2: guarda nombre en la tabla usuarios
-   Paso 3: muestra éxito y cambia a modo login
+   Paso 1: crear usuario en Supabase Auth
+   Paso 2: iniciar sesión automáticamente para obtener token real
+   Paso 3: con el token real, guardar nombre en tabla usuarios
+   Paso 4: guardar sesión y redirigir a inicio.html
 ─────────────────────────────────────────────────────────────── */
 async function registrar(nombre, email, password) {
   setCargando(true);
 
   try {
     /* Paso 1 — Crear usuario en Supabase Auth */
-    const resAuth = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+    const resSignup = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
       method:  'POST',
-      headers: HEADERS,
+      headers: HEADERS_BASE,
       body:    JSON.stringify({ email, password }),
     });
 
-    const dataAuth = await resAuth.json();
+    const dataSignup = await resSignup.json();
 
-    if (dataAuth.error) {
-      mostrarError(traducirError(dataAuth.error.message));
+    /* Si el correo ya existe u otro error */
+    if (dataSignup.error) {
+      mostrarError(traducirError(dataSignup.error.message));
       return;
     }
 
-    const usuarioId = dataAuth.user?.id;
+    /* Paso 2 — Iniciar sesión automáticamente para obtener token real */
+    const resLogin = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method:  'POST',
+      headers: HEADERS_BASE,
+      body:    JSON.stringify({ email, password }),
+    });
 
-    /* Paso 2 — Guardar nombre en la tabla usuarios */
-    if (usuarioId) {
-      await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
-        method:  'POST',
-        headers: { ...HEADERS, 'Prefer': 'return=minimal' },
-        body:    JSON.stringify({ id: usuarioId, nombre, email }),
-      });
+    const dataLogin = await resLogin.json();
+
+    if (dataLogin.error) {
+      /* El usuario se creó pero no pudimos iniciar sesión
+         Pedimos que lo haga manualmente */
+      mostrarExito('¡Cuenta creada! Ahora inicia sesión.');
+      cambiarModo('login');
+      return;
     }
 
-    /* Paso 3 — Éxito */
-    mostrarExito('¡Cuenta creada! Ahora inicia sesión.');
-    cambiarModo('login');
+    const token      = dataLogin.access_token;
+    const usuarioId  = dataLogin.user.id;
+
+    /* Paso 3 — Guardar nombre en tabla usuarios con token real */
+    await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
+      method:  'POST',
+      headers: headersConToken(token),
+      body:    JSON.stringify({ id: usuarioId, nombre, email }),
+    });
+
+    /* Paso 4 — Guardar sesión y redirigir */
+    localStorage.setItem('sb_token',      token);
+    localStorage.setItem('sb_usuario_id', usuarioId);
+    localStorage.setItem('sb_email',      email);
+    localStorage.setItem('sb_nombre',     nombre);
+
+    window.location.href = 'inicio.html';
 
   } catch (err) {
     mostrarError('Error de conexión. Verifica tu internet.');
+    console.error(err);
   } finally {
     setCargando(false);
   }
 }
 
 /* ── iniciarSesion(email, password) ──────────────────────────
-   Autentica con Supabase, guarda sesión en localStorage
-   y redirige a inicio.html
+   Autentica con Supabase, guarda sesión y redirige a inicio.html
 ─────────────────────────────────────────────────────────────── */
 async function iniciarSesion(email, password) {
   setCargando(true);
@@ -131,7 +151,7 @@ async function iniciarSesion(email, password) {
   try {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method:  'POST',
-      headers: HEADERS,
+      headers: HEADERS_BASE,
       body:    JSON.stringify({ email, password }),
     });
 
@@ -142,35 +162,45 @@ async function iniciarSesion(email, password) {
       return;
     }
 
-    /* Guardar sesión en localStorage */
+    /* Guardar sesión completa en localStorage */
     localStorage.setItem('sb_token',      data.access_token);
     localStorage.setItem('sb_usuario_id', data.user.id);
     localStorage.setItem('sb_email',      data.user.email);
 
-    /* Redirigir a la página de las cards */
+    /* Obtener el nombre desde la tabla usuarios */
+    const resUsuario = await fetch(
+      `${SUPABASE_URL}/rest/v1/usuarios?id=eq.${data.user.id}&select=nombre`,
+      { headers: headersConToken(data.access_token) }
+    );
+    const [usuario] = await resUsuario.json();
+    if (usuario?.nombre) {
+      localStorage.setItem('sb_nombre', usuario.nombre);
+    }
+
     window.location.href = 'inicio.html';
 
   } catch (err) {
     mostrarError('Error de conexión. Verifica tu internet.');
+    console.error(err);
   } finally {
     setCargando(false);
   }
 }
 
 /* ── cerrarSesion() ───────────────────────────────────────────
-   Limpia localStorage y manda al login.
-   Se llama desde el botón cerrar sesión en inicio.html
+   Limpia localStorage y manda al login
 ─────────────────────────────────────────────────────────────── */
 function cerrarSesion() {
   localStorage.removeItem('sb_token');
   localStorage.removeItem('sb_usuario_id');
   localStorage.removeItem('sb_email');
+  localStorage.removeItem('sb_nombre');
   window.location.href = 'index.html';
 }
 
 /* ── protegerPagina() ─────────────────────────────────────────
-   Si no hay token en localStorage manda al login.
-   Se llama al inicio de inicio.html, simulador.html, ejercicios.html
+   Si no hay token manda al login.
+   Va al inicio de inicio.html, simulador.html, ejercicios.html
 ─────────────────────────────────────────────────────────────── */
 function protegerPagina() {
   const token = localStorage.getItem('sb_token');
@@ -178,13 +208,14 @@ function protegerPagina() {
 }
 
 /* ── obtenerUsuarioActual() ───────────────────────────────────
-   Retorna id y email del usuario logueado.
+   Retorna los datos del usuario logueado.
    db.js la usa para guardar ejercicios con el usuario correcto.
 ─────────────────────────────────────────────────────────────── */
 function obtenerUsuarioActual() {
   return {
-    id:    localStorage.getItem('sb_usuario_id'),
-    email: localStorage.getItem('sb_email'),
+    id:     localStorage.getItem('sb_usuario_id'),
+    email:  localStorage.getItem('sb_email'),
+    nombre: localStorage.getItem('sb_nombre'),
   };
 }
 
@@ -222,7 +253,6 @@ function setCargando(activo) {
     : (modoActual === 'registro' ? 'Crear cuenta' : 'Iniciar sesión');
 }
 
-/* Traduce errores de inglés de Supabase a español */
 function traducirError(msg) {
   if (!msg) return 'Ocurrió un error. Intenta de nuevo.';
   const m = msg.toLowerCase();
