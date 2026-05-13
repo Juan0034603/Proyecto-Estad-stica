@@ -1,0 +1,147 @@
+
+    body {
+      display: flex;   /* vertical*/
+      flex-direction: column;
+      min-height: 100vh; /*Hace que el body tenga como altura mínima el 100% de la ventana del navegador. */
+    }
+
+    /* Hero -------------------------------------------------- */
+    .hero {
+      padding: var(--sp-16) var(--sp-6) var(--sp-12);
+      text-align: center; 
+      position: relative; /*Hace que el elemento pueda servir como referencia para elementos posicionados dentro de él.*/
+      overflow: hidden; /*Oculta cualquier contenido que se salga del tamaño del contenedor.*/
+    }
+
+    /* Fondo decorativo: rejilla de puntos sutil */
+    .hero::before {  /* crea una capa falsa sobre .hero*/
+      content: ''; /*Obligatorio en sub elementos, si esgtabn basios simplemente no aparecen */
+      position: absolute;  /*Hace que el elemento pueda colocarse libremente dentro de .hero.*/
+      inset: 0; /*Todo el tamaño en el contenedor */
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px); /* fondo de puntos */
+      background-size: 28px 28px; /* se repite este cierto tiempo */
+      pointer-events: none; /* ignorara todos los cliks y/o eventos */
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 100%); /* crea elipse con tamaño centrada que se ve en el centro y se transparentan */
+    }
+
+    /* Halos de color detrás del título */
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 20%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 200px;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(74,143,255,0.08) 0%,
+        rgba(62,207,142,0.05) 45%,
+        transparent 70%
+      );
+      pointer-events: none;
+      filter: blur(20px); /* difumina */
+    }
+
+    .hero__etiqueta {
+      display: inline-flex; /* solo ocupa lo necesario*/
+      align-items: center;
+      gap: var(--sp-2);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em; /*separa letras */
+      text-transform: uppercase; /*mayuscukla transofmra*/
+      color: var(--text-muted);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      padding: 5px 14px;
+      border-radius: 99px;
+      margin-bottom: var(--sp-6);
+      position: relative;
+      z-index: 1; /*lo coloca ensima */
+    }
+
+    .hero__etiqueta::before { /* Crea un elemento falso antes del texto*/
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--verde);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--verde);
+      animation: pulso 2.4s ease-in-out infinite;  /*suave;rapido;suave*/
+    }
+
+    @keyframes pulso {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    .hero__titulo {
+      position: relative;
+      z-index: 1; 
+      margin-bottom: var(--sp-4);
+      /* Efecto de texto con gradiente sutil */
+      background: var(--text-primary);
+      background-clip: text; /*aplica el color a el text y no al componente */
+    }
+
+    
+.hero__subtitulo {
+  position: relative;
+  z-index: 1;
+  font-size: 1rem; /*1rem = 16px*/
+  color: var(--text-secondary);
+  max-width: 480px;
+  margin: 0 auto; /*isz dere automatico */ 
+  line-height: 1.7; /* Espacio entre líneas.*/
+    animation: aparecer 0.5s ease/*Empieza y termina suave.*/ 0.18s both; /*Evita glitches visuales.*/
+
+}
+ @keyframes aparecer {
+  from { opacity: 0; transform: translateY(12px); } /*inicial*/
+  to   { opacity: 1; transform: translateY(0); } /*final*/
+}
+
+
+/* ── Cards grid ──────────────────────────────────────────── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;/*Define las columnas. fracccion espacio disponible */
+  gap: var(--sp-6);
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 var(--sp-6) var(--sp-16); /* arriba lados abajo */
+}
+ 
+.card {
+  animation: subirCard 0.55s ease both;
+}
+ 
+.card:nth-child(1) { animation-delay: 0.08s; } /*Selecciona el PRIMER hijo.*/
+.card:nth-child(2) { animation-delay: 0.18s; }
+ 
+@keyframes subirCard {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+ 
+.card__icon svg { width: 28px; height: 28px; }
+ 
+.card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+ 
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 640px) {  /* adapta a telefonos */ /*probar*/
+  .cards-grid {
+    grid-template-columns: 1fr;
+    padding: 0 var(--sp-4) var(--sp-10);
+  }
+ 
+  .hero {
+    padding: var(--sp-10) var(--sp-4) var(--sp-8);
+  }
+}
+ 

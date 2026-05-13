@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />   <!--Para que se adapte a la escala de un telefono -->
+
+  <title>Simulador de Estadística Inferencial</title>
+  <meta name="description" content="Simulador interactivo de pruebas de hipótesis y
+   generador de ejercicios. Proyecto de estadística inferencial — Ingeniería de Sistemas." /> <!--para navegadores -->
+  <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/inicio.css" />
+
+</head>
+<body>
+
+  <!-- ── Hero ──────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero__etiqueta">
+      Ingeniería de Sistemas · Quinto semestre
+    </div>
+
+    <h1 class="hero__titulo">
+      Simulador de<br>estadística inferencial
+    </h1>
+
+    <p class="hero__subtitulo">
+      Visualiza pruebas de hipótesis en tiempo real,
+      practica con ejercicios generados automáticamente
+      y analiza tu propio aprendizaje con inferencia estadística.
+    </p>
+  </section>
+
+  <!-- ── Cards ─────────────────────────────────────────────── -->
+  <main class="cards-grid">
+
+    <!-- Card 1: Simulador -->
+    <article class="card card--azul">
+      <div class="card__deco"></div>
+
+      <div class="card__icon">
+        <!-- Ícono: distribución normal / campana -->
+        <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path
+            d="M2 20 C5 20, 7 8, 13 8 C19 8, 21 20, 24 20"
+            stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" fill="none"
+          />
+          <line x1="13" y1="8" x2="13" y2="20" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.5"/>
+        </svg>
+      </div>
+
+      <div class="card__meta">
+        <h2 class="card__title">Simulador interactivo</h2>
+        <p class="card__desc">
+          Ajusta parámetros con sliders y visualiza pruebas de hipótesis
+          en tiempo real. Observa cómo cambia la región de rechazo,
+          el estadístico Z y el p-valor al instante.
+        </p>
+      </div>
+
+      <div class="card__tags">
+        <span class="tag">Prueba Z</span>
+        <span class="tag">p-valor</span>
+        <span class="tag">Región de rechazo</span>
+        <span class="tag">Historial</span>
+      </div>
+
+      <div class="card__btn">
+        <a href="../html/simulador.html" class="btn btn--primary">
+          Abrir simulador
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </article>
+
+    <!-- Card 2: Ejercicios -->
+    <article class="card card--verde">
+      <div class="card__deco"></div>
+
+      <div class="card__icon">
+        <!-- Ícono: lápiz / ejercicio -->
+        <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="5" y="4" width="12" height="16" rx="2"
+            stroke="currentColor" stroke-width="2" fill="none"/>
+          <line x1="8" y1="9"  x2="14" y2="9"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="8" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="8" y1="15" x2="11" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="19" cy="19" r="4" fill="currentColor" opacity="0.2"/>
+          <path d="M17.5 19l1 1 2-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div class="card__meta">
+        <h2 class="card__title">Ejercicios aleatorios</h2>
+        <p class="card__desc">
+          Practica con ejercicios generados automáticamente sobre
+          pruebas Z e intervalos de confianza. Verifica tus respuestas
+          y analiza tu progreso con inferencia estadística real.
+        </p>
+      </div>
+
+      <div class="card__tags">
+        <span class="tag">Prueba Z</span>
+        <span class="tag">Intervalos de confianza</span>
+        <span class="tag">Retroalimentación</span>
+        <span class="tag">Progreso</span>
+      </div>
+
+      <div class="card__btn">
+        <a href="../html/ejercicios.html" class="btn btn--success">
+          Ir a ejercicios
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- ── Footer ────────────────────────────────────────────── -->
+  <footer class="footer">
+    HTML <span>·</span> CSS <span>·</span> JavaScript
+    <span>·</span> GitHub Pages
+    <span>·</span> Estadística Inferencial 2025
+  </footer>
+
+</body>
+</html>

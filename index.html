@@ -2,130 +2,96 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />   <!--Para que se adapte a la escala de un telefono -->
-
-  <title>Simulador de Estadística Inferencial</title>
-  <meta name="description" content="Simulador interactivo de pruebas de hipótesis y
-   generador de ejercicios. Proyecto de estadística inferencial — Ingeniería de Sistemas." /> <!--para navegadores -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar sesión — Estadística Inferencial</title>
   <link rel="stylesheet" href="css/global.css" />
-    <link rel="stylesheet" href="css/index.css" />
-
+  <link rel="stylesheet" href="css/index.css" />
 </head>
 <body>
 
-  <!-- ── Hero ──────────────────────────────────────────────── -->
-  <section class="hero">
-    <div class="hero__etiqueta">
-      Ingeniería de Sistemas · Quinto semestre
+  <!-- ── Card principal ──────────────────────────────────────── -->
+  <div class="login-card">
+
+    <!-- Cabecera: ícono + título -->
+    <div class="login-card__header">
+      <div class="login-card__icono">
+        <!-- Ícono: distribución normal / campana -->
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+          <path d="M2 20 C5 20, 7 8, 13 8 C19 8, 21 20, 24 20"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="13" y1="8" x2="13" y2="20"
+            stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.5"/>
+        </svg>
+      </div>
+      <h1 class="login-card__titulo">Estadística inferencial</h1>
+      <p class="login-card__subtitulo">Ingeniería de Sistemas · Quinto semestre</p>
     </div>
 
-    <h1 class="hero__titulo">
-      Simulador de<br>estadística inferencial
-    </h1>
+    <!-- Toggle: cambia entre login y registro -->
+    <div class="login-toggle">
+      <button class="login-toggle__btn activo" id="btn-modo-login"
+              onclick="cambiarModo('login')">
+        Iniciar sesión
+      </button>
+      <button class="login-toggle__btn" id="btn-modo-registro"
+              onclick="cambiarModo('registro')">
+        Registrarse
+      </button>
+    </div>
 
-    <p class="hero__subtitulo">
-      Visualiza pruebas de hipótesis en tiempo real,
-      practica con ejercicios generados automáticamente
-      y analiza tu propio aprendizaje con inferencia estadística.
+    <!-- Campos del formulario -->
+    <div class="login-campos">
+
+      <!-- Campo nombre: solo visible en modo registro -->
+      <div class="campo-grupo" id="campo-nombre" style="display:none;">
+        <label for="input-nombre">Nombre completo</label>
+        <input type="text" id="input-nombre"
+               placeholder="Ej: Juan Pérez" autocomplete="name" />
+      </div>
+
+      <!-- Campo código: solo visible en modo registro -->
+      <div class="campo-grupo" id="campo-codigo" style="display:none;">
+        <label for="input-codigo">Código estudiantil</label>
+        <input type="text" id="input-codigo"
+               placeholder="Ej: 2023115089" autocomplete="off" />
+      </div>
+
+      <!-- Email: siempre visible -->
+      <div class="campo-grupo">
+        <label for="input-email">Correo electrónico</label>
+        <input type="email" id="input-email"
+               placeholder="tu@correo.com" autocomplete="email" />
+      </div>
+
+      <!-- Contraseña: siempre visible -->
+      <div class="campo-grupo">
+        <label for="input-password">Contraseña</label>
+        <input type="password" id="input-password"
+               placeholder="Mínimo 6 caracteres" autocomplete="current-password" />
+      </div>
+
+    </div>
+
+    <!-- Mensaje de error (auth.js lo muestra si algo falla) -->
+    <div class="login-error" id="login-error"></div>
+
+    <!-- Mensaje de éxito (auth.js lo muestra al registrarse) -->
+    <div class="login-exito" id="login-exito"></div>
+
+    <!-- Botón principal: su texto cambia según el modo -->
+    <button class="btn btn--primary" id="btn-submit" onclick="submitFormulario()">
+      Iniciar sesión
+    </button>
+
+    <!-- Footer informativo -->
+    <p class="login-card__footer">
+      Tus datos se usan exclusivamente para el análisis estadístico del curso.
     </p>
-  </section>
 
-  <!-- ── Cards ─────────────────────────────────────────────── -->
-  <main class="cards-grid">
+  </div>
 
-    <!-- Card 1: Simulador -->
-    <article class="card card--azul">
-      <div class="card__deco"></div>
-
-      <div class="card__icon">
-        <!-- Ícono: distribución normal / campana -->
-        <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path
-            d="M2 20 C5 20, 7 8, 13 8 C19 8, 21 20, 24 20"
-            stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" fill="none"
-          />
-          <line x1="13" y1="8" x2="13" y2="20" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.5"/>
-        </svg>
-      </div>
-
-      <div class="card__meta">
-        <h2 class="card__title">Simulador interactivo</h2>
-        <p class="card__desc">
-          Ajusta parámetros con sliders y visualiza pruebas de hipótesis
-          en tiempo real. Observa cómo cambia la región de rechazo,
-          el estadístico Z y el p-valor al instante.
-        </p>
-      </div>
-
-      <div class="card__tags">
-        <span class="tag">Prueba Z</span>
-        <span class="tag">p-valor</span>
-        <span class="tag">Región de rechazo</span>
-        <span class="tag">Historial</span>
-      </div>
-
-      <div class="card__btn">
-        <a href="html/simulador.html" class="btn btn--primary">
-          Abrir simulador
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </a>
-      </div>
-    </article>
-
-    <!-- Card 2: Ejercicios -->
-    <article class="card card--verde">
-      <div class="card__deco"></div>
-
-      <div class="card__icon">
-        <!-- Ícono: lápiz / ejercicio -->
-        <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="5" y="4" width="12" height="16" rx="2"
-            stroke="currentColor" stroke-width="2" fill="none"/>
-          <line x1="8" y1="9"  x2="14" y2="9"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="8" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="8" y1="15" x2="11" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="19" cy="19" r="4" fill="currentColor" opacity="0.2"/>
-          <path d="M17.5 19l1 1 2-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-
-      <div class="card__meta">
-        <h2 class="card__title">Ejercicios aleatorios</h2>
-        <p class="card__desc">
-          Practica con ejercicios generados automáticamente sobre
-          pruebas Z e intervalos de confianza. Verifica tus respuestas
-          y analiza tu progreso con inferencia estadística real.
-        </p>
-      </div>
-
-      <div class="card__tags">
-        <span class="tag">Prueba Z</span>
-        <span class="tag">Intervalos de confianza</span>
-        <span class="tag">Retroalimentación</span>
-        <span class="tag">Progreso</span>
-      </div>
-
-      <div class="card__btn">
-        <a href="html/ejercicios.html" class="btn btn--success">
-          Ir a ejercicios
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </a>
-      </div>
-    </article>
-
-  </main>
-
-  <!-- ── Footer ────────────────────────────────────────────── -->
-  <footer class="footer">
-    HTML <span>·</span> CSS <span>·</span> JavaScript
-    <span>·</span> GitHub Pages
-    <span>·</span> Estadística Inferencial 2025
-  </footer>
+  <!-- auth.js maneja toda la lógica de este formulario -->
+  <script src="js/auth.js"></script>
 
 </body>
 </html>
