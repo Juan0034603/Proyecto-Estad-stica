@@ -6,23 +6,23 @@ const SUPABASE_URL = 'https://pidjkietkwddeqxpvonv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_khALbTOTOfNwZJGOi8AiGg_qOikqQW7';
 
 const HEADERS_BASE = {
-  'apikey':       SUPABASE_KEY,
+  'apikey': SUPABASE_KEY,
   'Content-Type': 'application/json',
 };
 
 function headersConToken(token) {
   return {
-    'apikey':        SUPABASE_KEY,
+    'apikey': SUPABASE_KEY,
     'Authorization': `Bearer ${token}`,
-    'Content-Type':  'application/json',
-    'Prefer':        'return=minimal',
+    'Content-Type': 'application/json',
+    'Prefer': 'return=minimal',
   };
 }
 
 /* Detecta si estamos dentro de html/ o en la raíz */
 const EN_SUBCARPETA = window.location.pathname.includes('/html/');
-const RUTA_INICIO   = EN_SUBCARPETA ? '../html/inicio.html' : 'html/inicio.html';
-const RUTA_LOGIN    = EN_SUBCARPETA ? '../index.html'       : 'index.html';
+const RUTA_INICIO = EN_SUBCARPETA ? '../html/inicio.html' : 'html/inicio.html';
+const RUTA_LOGIN = EN_SUBCARPETA ? '../index.html' : 'index.html';
 
 let modoActual = 'login';
 
@@ -35,17 +35,18 @@ function cambiarModo(modo) {
   const esRegistro = modo === 'registro';
 
   document.getElementById('campo-nombre').style.display = esRegistro ? 'flex' : 'none';
-  document.getElementById('btn-submit').textContent     = esRegistro ? 'Crear cuenta' : 'Iniciar sesión';
+  document.getElementById('campo-grupo').style.display = esRegistro ? 'flex' : 'none'; // ← agregar esta línea
 
-  document.getElementById('btn-modo-login').classList.toggle('activo',    modo === 'login');
+  document.getElementById('btn-submit').textContent = esRegistro ? 'Crear cuenta' : 'Iniciar sesión';
+
+  document.getElementById('btn-modo-login').classList.toggle('activo', modo === 'login');
   document.getElementById('btn-modo-registro').classList.toggle('activo', modo === 'registro');
 
   ocultarMensajes();
-  limpiarCampos();
 }
 
 async function submitFormulario() {
-  const email    = document.getElementById('input-email').value.trim();
+  const email = document.getElementById('input-email').value.trim();
   const password = document.getElementById('input-password').value.trim();
 
   if (!email || !password) {
@@ -55,10 +56,12 @@ async function submitFormulario() {
 
   if (modoActual === 'registro') {
     const nombre = document.getElementById('input-nombre').value.trim();
+    const grupo = document.getElementById('input-grupo').value.trim() || null; // ← agregar
+
     if (!nombre) { mostrarError('Por favor escribe tu nombre completo.'); return; }
-    await registrar(nombre, email, password);
+    await registrar(nombre, email, password, grupo);
   } else {
-    await iniciarSesion(email, password);
+    await iniciarSesion(email, password, );
   }
 }
 
@@ -66,14 +69,14 @@ async function submitFormulario() {
    AUTENTICACIÓN
    ============================================================ */
 
-async function registrar(nombre, email, password) {
+async function registrar(nombre, email, password, grupo) {
   setCargando(true);
   try {
     /* 1 — Crear usuario en Supabase Auth */
     const resSignup = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-      method:  'POST',
+      method: 'POST',
       headers: HEADERS_BASE,
-      body:    JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password }),
     });
     const dataSignup = await resSignup.json();
 
@@ -84,9 +87,9 @@ async function registrar(nombre, email, password) {
 
     /* 2 — Login automático para obtener token real */
     const resLogin = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method:  'POST',
+      method: 'POST',
       headers: HEADERS_BASE,
-      body:    JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password }),
     });
     const dataLogin = await resLogin.json();
 
@@ -96,14 +99,14 @@ async function registrar(nombre, email, password) {
       return;
     }
 
-    const token     = dataLogin.access_token;
+    const token = dataLogin.access_token;
     const usuarioId = dataLogin.user.id;
 
     /* 3 — Guardar datos en tabla usuarios */
     await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
-      method:  'POST',
+      method: 'POST',
       headers: headersConToken(token),
-      body:    JSON.stringify({ id: usuarioId, nombre, email }),
+      body: JSON.stringify({ id: usuarioId, nombre, email, grupo }),
     });
 
     /* 4 — Guardar sesión */
@@ -125,9 +128,9 @@ async function iniciarSesion(email, password) {
   setCargando(true);
   try {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method:  'POST',
+      method: 'POST',
       headers: HEADERS_BASE,
-      body:    JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
 
@@ -145,10 +148,10 @@ async function iniciarSesion(email, password) {
     const [usuario] = await resUsuario.json();
 
     guardarSesion({
-      token:     data.access_token,
+      token: data.access_token,
       usuarioId: data.user.id,
-      email:     data.user.email,
-      nombre:    usuario?.nombre ?? '',
+      email: data.user.email,
+      nombre: usuario?.nombre ?? '',
     });
 
     limpiarCampos();
@@ -163,7 +166,7 @@ async function iniciarSesion(email, password) {
 }
 
 function cerrarSesion() {
-  ['sb_token','sb_usuario_id','sb_email','sb_nombre'].forEach(k => localStorage.removeItem(k));
+  ['sb_token', 'sb_usuario_id', 'sb_email', 'sb_nombre'].forEach(k => localStorage.removeItem(k));
   window.location.href = RUTA_LOGIN;
 }
 
@@ -173,8 +176,8 @@ function protegerPagina() {
 
 function obtenerUsuarioActual() {
   return {
-    id:     localStorage.getItem('sb_usuario_id'),
-    email:  localStorage.getItem('sb_email'),
+    id: localStorage.getItem('sb_usuario_id'),
+    email: localStorage.getItem('sb_email'),
     nombre: localStorage.getItem('sb_nombre'),
   };
 }
@@ -184,14 +187,14 @@ function obtenerUsuarioActual() {
    ============================================================ */
 
 function guardarSesion({ token, usuarioId, email, nombre }) {
-  localStorage.setItem('sb_token',      token);
+  localStorage.setItem('sb_token', token);
   localStorage.setItem('sb_usuario_id', usuarioId);
-  localStorage.setItem('sb_email',      email);
-  localStorage.setItem('sb_nombre',     nombre);
+  localStorage.setItem('sb_email', email);
+  localStorage.setItem('sb_nombre', nombre);
 }
 
 function limpiarCampos() {
-  ['input-nombre','input-email','input-password'].forEach(id => {
+  ['input-nombre', 'input-email', 'input-password'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -223,7 +226,7 @@ function ocultarMensajes() {
 function setCargando(activo) {
   const btn = document.getElementById('btn-submit');
   if (!btn) return;
-  btn.disabled    = activo;
+  btn.disabled = activo;
   btn.textContent = activo
     ? 'Cargando...'
     : (modoActual === 'registro' ? 'Crear cuenta' : 'Iniciar sesión');
