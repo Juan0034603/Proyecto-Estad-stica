@@ -1,0 +1,136 @@
+/* ============================================================
+   analisis.css — Estilos del dashboard del administrador
+   ============================================================ */
+
+.analisis-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* ── Selector de tipo de análisis ─────────────────────────── */
+.tipo-analisis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.tipo-btn {
+  padding: 16px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+  transition: all var(--t);
+  cursor: pointer;
+}
+
+.tipo-btn:hover {
+  border-color: var(--azul);
+  color: var(--azul);
+}
+
+.tipo-btn.activo {
+  border-color: var(--azul);
+  background: var(--azul-dim);
+  color: var(--azul);
+  font-weight: 600;
+}
+
+.tipo-btn__titulo {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.tipo-btn__desc {
+  font-size: 0.78rem;
+  opacity: 0.7;
+}
+
+/* ── Panel de configuración del análisis ──────────────────── */
+.config-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xl);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.config-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.config-grupo label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Select estilizado igual que los inputs del login */
+.config-grupo select {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--t), box-shadow var(--t);
+  appearance: none;
+}
+
+.config-grupo select:focus {
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px var(--azul-dim);
+}
+
+/* ── Resultado del análisis ───────────────────────────────── */
+.resultado-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xl);
+  padding: 20px 24px;
+}
+
+.resultado-titulo {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* ── Métricas globales arriba ─────────────────────────────── */
+.globales {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .tipo-analisis { grid-template-columns: 1fr; }
+  .globales      { grid-template-columns: 1fr 1fr; }
+  .config-panel  { flex-direction: column; }
+  .analisis-wrap { padding: 16px; }
+}

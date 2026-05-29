@@ -20,9 +20,10 @@ function headersConToken(token) {
 }
 
 /* Detecta si estamos dentro de html/ o en la raíz */
-const EN_SUBCARPETA = window.location.pathname.includes('/html/');
-const RUTA_INICIO = EN_SUBCARPETA ? '../html/inicio.html' : 'html/inicio.html';
-const RUTA_LOGIN = EN_SUBCARPETA ? '../index.html' : 'index.html';
+const EN_SUBCARPETA  = window.location.pathname.includes('/html/');
+const RUTA_INICIO    = EN_SUBCARPETA ? '../html/inicio.html'    : 'html/inicio.html';
+const RUTA_ANALISIS  = EN_SUBCARPETA ? '../html/analisis.html'  : 'html/analisis.html';
+const RUTA_LOGIN     = EN_SUBCARPETA ? '../index.html'          : 'index.html';
 
 let modoActual = 'login';
 
@@ -35,18 +36,18 @@ function cambiarModo(modo) {
   const esRegistro = modo === 'registro';
 
   document.getElementById('campo-nombre').style.display = esRegistro ? 'flex' : 'none';
-  document.getElementById('campo-grupo').style.display = esRegistro ? 'flex' : 'none'; // ← agregar esta línea
+  document.getElementById('campo-grupo').style.display  = esRegistro ? 'flex' : 'none';
 
   document.getElementById('btn-submit').textContent = esRegistro ? 'Crear cuenta' : 'Iniciar sesión';
 
-  document.getElementById('btn-modo-login').classList.toggle('activo', modo === 'login');
+  document.getElementById('btn-modo-login').classList.toggle('activo',    modo === 'login');
   document.getElementById('btn-modo-registro').classList.toggle('activo', modo === 'registro');
 
   ocultarMensajes();
 }
 
 async function submitFormulario() {
-  const email = document.getElementById('input-email').value.trim();
+  const email    = document.getElementById('input-email').value.trim();
   const password = document.getElementById('input-password').value.trim();
 
   if (!email || !password) {
@@ -56,12 +57,12 @@ async function submitFormulario() {
 
   if (modoActual === 'registro') {
     const nombre = document.getElementById('input-nombre').value.trim();
-    const grupo = document.getElementById('input-grupo').value.trim() || null; // ← agregar
+    const grupo  = document.getElementById('input-grupo').value || null;
 
     if (!nombre) { mostrarError('Por favor escribe tu nombre completo.'); return; }
     await registrar(nombre, email, password, grupo);
   } else {
-    await iniciarSesion(email, password, );
+    await iniciarSesion(email, password);
   }
 }
 
@@ -74,9 +75,9 @@ async function registrar(nombre, email, password, grupo) {
   try {
     /* 1 — Crear usuario en Supabase Auth */
     const resSignup = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-      method: 'POST',
+      method:  'POST',
       headers: HEADERS_BASE,
-      body: JSON.stringify({ email, password }),
+      body:    JSON.stringify({ email, password }),
     });
     const dataSignup = await resSignup.json();
 
@@ -87,9 +88,9 @@ async function registrar(nombre, email, password, grupo) {
 
     /* 2 — Login automático para obtener token real */
     const resLogin = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method: 'POST',
+      method:  'POST',
       headers: HEADERS_BASE,
-      body: JSON.stringify({ email, password }),
+      body:    JSON.stringify({ email, password }),
     });
     const dataLogin = await resLogin.json();
 
@@ -99,21 +100,22 @@ async function registrar(nombre, email, password, grupo) {
       return;
     }
 
-    const token = dataLogin.access_token;
+    const token     = dataLogin.access_token;
     const usuarioId = dataLogin.user.id;
 
-    /* 3 — Guardar datos en tabla usuarios */
+    /* 3 — Guardar datos en tabla usuarios (sin rol, los estudiantes no son admin) */
     await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
-      method: 'POST',
+      method:  'POST',
       headers: headersConToken(token),
-      body: JSON.stringify({ id: usuarioId, nombre, email, grupo }),
+      body:    JSON.stringify({ id: usuarioId, nombre, email, grupo }),
     });
 
-    /* 4 — Guardar sesión */
-    guardarSesion({ token, usuarioId, email, nombre });
+    /* 4 — Guardar sesión (rol vacío para estudiantes nuevos) */
+    guardarSesion({ token, usuarioId, email, nombre, rol: null });
 
-    /* 5 — Limpiar y redirigir */
     limpiarCampos();
+
+    /* 5 — Estudiantes nuevos siempre van a inicio */
     window.location.href = RUTA_INICIO;
 
   } catch (err) {
@@ -127,35 +129,46 @@ async function registrar(nombre, email, password, grupo) {
 async function iniciarSesion(email, password) {
   setCargando(true);
   try {
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method: 'POST',
+    const res  = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method:  'POST',
       headers: HEADERS_BASE,
-      body: JSON.stringify({ email, password }),
+      body:    JSON.stringify({ email, password }),
     });
     const data = await res.json();
 
-    /* Verificar error ANTES de tocar data.user */
     if (!res.ok || data.error) {
       mostrarError(traducirError(data.error_description || data.error?.message || data.error));
       return;
     }
 
-    /* Obtener nombre desde tabla usuarios */
+    /* Obtener nombre Y ROL desde tabla usuarios */
     const resUsuario = await fetch(
-      `${SUPABASE_URL}/rest/v1/usuarios?id=eq.${data.user.id}&select=nombre`,
+      `${SUPABASE_URL}/rest/v1/usuarios?id=eq.${data.user.id}&select=nombre,rol,grupo`,
       { headers: headersConToken(data.access_token) }
     );
     const [usuario] = await resUsuario.json();
 
+    const rol = usuario?.rol ?? null;
+
     guardarSesion({
-      token: data.access_token,
+      token:     data.access_token,
       usuarioId: data.user.id,
-      email: data.user.email,
-      nombre: usuario?.nombre ?? '',
+      email:     data.user.email,
+      nombre:    usuario?.nombre ?? '',
+      rol,
     });
 
     limpiarCampos();
-    window.location.href = RUTA_INICIO;
+
+    /* ── Redirigir según el rol ─────────────────────────────
+       administrador → analisis.html (dashboard del profesor)
+       cualquier otro → inicio.html (página de cards)
+    ──────────────────────────────────────────────────────── */
+    if (rol === 'administrador') {
+      window.location.href = RUTA_ANALISIS;
+    } else {
+      window.location.href = RUTA_INICIO;
+    }
 
   } catch (err) {
     mostrarError('Error de conexión. Verifica tu internet.');
@@ -166,7 +179,7 @@ async function iniciarSesion(email, password) {
 }
 
 function cerrarSesion() {
-  ['sb_token', 'sb_usuario_id', 'sb_email', 'sb_nombre'].forEach(k => localStorage.removeItem(k));
+  ['sb_token', 'sb_usuario_id', 'sb_email', 'sb_nombre', 'sb_rol'].forEach(k => localStorage.removeItem(k));
   window.location.href = RUTA_LOGIN;
 }
 
@@ -174,11 +187,20 @@ function protegerPagina() {
   if (!localStorage.getItem('sb_token')) window.location.href = RUTA_LOGIN;
 }
 
+/* Protección exclusiva para la página de análisis:
+   solo deja entrar si el rol es administrador */
+function protegerAdmin() {
+  const token = localStorage.getItem('sb_token');
+  const rol   = localStorage.getItem('sb_rol');
+  if (!token || rol !== 'administrador') window.location.href = RUTA_LOGIN;
+}
+
 function obtenerUsuarioActual() {
   return {
-    id: localStorage.getItem('sb_usuario_id'),
-    email: localStorage.getItem('sb_email'),
+    id:     localStorage.getItem('sb_usuario_id'),
+    email:  localStorage.getItem('sb_email'),
     nombre: localStorage.getItem('sb_nombre'),
+    rol:    localStorage.getItem('sb_rol'),
   };
 }
 
@@ -186,11 +208,12 @@ function obtenerUsuarioActual() {
    HELPERS INTERNOS
    ============================================================ */
 
-function guardarSesion({ token, usuarioId, email, nombre }) {
-  localStorage.setItem('sb_token', token);
+function guardarSesion({ token, usuarioId, email, nombre, rol }) {
+  localStorage.setItem('sb_token',      token);
   localStorage.setItem('sb_usuario_id', usuarioId);
-  localStorage.setItem('sb_email', email);
-  localStorage.setItem('sb_nombre', nombre);
+  localStorage.setItem('sb_email',      email);
+  localStorage.setItem('sb_nombre',     nombre ?? '');
+  localStorage.setItem('sb_rol',        rol ?? '');
 }
 
 function limpiarCampos() {
@@ -226,7 +249,7 @@ function ocultarMensajes() {
 function setCargando(activo) {
   const btn = document.getElementById('btn-submit');
   if (!btn) return;
-  btn.disabled = activo;
+  btn.disabled    = activo;
   btn.textContent = activo
     ? 'Cargando...'
     : (modoActual === 'registro' ? 'Crear cuenta' : 'Iniciar sesión');

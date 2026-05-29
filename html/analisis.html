@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel del Profesor — Estadística Inferencial</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/componentes.css" />
+  <link rel="stylesheet" href="../css/analisis.css" />
+</head>
+<body>
+
+  <!-- ── Navbar ──────────────────────────────────────────────── -->
+  <nav class="navbar">
+    <span class="navbar__title">Panel del Profesor</span>
+    <button onclick="cerrarSesion()" class="btn btn--ghost"
+            style="margin-left:auto; font-size:0.85rem; padding:6px 14px;">
+      Cerrar sesión
+    </button>
+  </nav>
+
+  <main class="analisis-wrap">
+
+    <!-- ── Métricas globales del curso ─────────────────────── -->
+    <div class="globales" id="globales">
+      <div class="metrica">
+        <div class="metrica__label">Total ejercicios</div>
+        <div class="metrica__valor" id="g-total">—</div>
+      </div>
+      <div class="metrica">
+        <div class="metrica__label">Estudiantes activos</div>
+        <div class="metrica__valor" id="g-estudiantes">—</div>
+      </div>
+      <div class="metrica">
+        <div class="metrica__label">Precisión global</div>
+        <div class="metrica__valor" id="g-precision">—</div>
+      </div>
+      <div class="metrica">
+        <div class="metrica__label">Ejercicios hoy</div>
+        <div class="metrica__valor" id="g-hoy">—</div>
+      </div>
+    </div>
+
+    <!-- ── Selector de tipo de análisis ────────────────────── -->
+    <div class="tipo-analisis">
+      <button class="tipo-btn activo" id="btn-tipo-1" onclick="cambiarTipo(1)">
+        <div class="tipo-btn__titulo">Análisis de un grupo</div>
+        <div class="tipo-btn__desc">Prueba si un grupo aprende mejor que el azar</div>
+      </button>
+      <button class="tipo-btn" id="btn-tipo-2" onclick="cambiarTipo(2)">
+        <div class="tipo-btn__titulo">Comparativa entre grupos</div>
+        <div class="tipo-btn__desc">¿Hay diferencia significativa entre dos grupos?</div>
+      </button>
+    </div>
+
+    <!-- ── Panel de configuración ──────────────────────────── -->
+    <div class="config-panel">
+
+      <!-- Selector grupo A (siempre visible) -->
+      <div class="config-grupo">
+        <label id="label-grupoA">Grupo</label>
+        <select id="sel-grupoA">
+          <option value="todos">Todos los grupos</option>
+          <option value="grupo1">Grupo 1</option>
+          <option value="grupo2">Grupo 2</option>
+          <option value="grupo3">Grupo 3</option>
+          <option value="grupo4">Grupo 4</option>
+        </select>
+      </div>
+
+      <!-- Selector grupo B (solo visible en comparativa) -->
+      <div class="config-grupo" id="config-grupoB" style="display:none;">
+        <label>Grupo B</label>
+        <select id="sel-grupoB">
+          <option value="grupo1">Grupo 1</option>
+          <option value="grupo2">Grupo 2</option>
+          <option value="grupo3">Grupo 3</option>
+          <option value="grupo4">Grupo 4</option>
+        </select>
+      </div>
+
+      <!-- Filtro por tema -->
+      <div class="config-grupo">
+        <label>Tema</label>
+        <select id="sel-tema">
+          <option value="todos">Todos los temas</option>
+          <option value="prueba_z">Prueba Z</option>
+          <option value="intervalo_confianza">Intervalo de confianza</option>
+        </select>
+      </div>
+
+      <button class="btn btn--primary" onclick="ejecutarAnalisis()">
+        Analizar
+      </button>
+
+    </div>
+
+    <!-- ── Resultado del análisis ──────────────────────────── -->
+    <div class="resultado-panel">
+      <p class="resultado-titulo" id="resultado-titulo">Configura los parámetros y haz clic en Analizar</p>
+      <div id="resultado-contenido">
+        <p class="analisis-aviso">El análisis aparecerá aquí.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="../js/auth.js"></script>
+  <script src="../js/db.js"></script>
+  <script src="../js/estadistica.js"></script>
+  <script src="../js/curva.js"></script>
+  <script src="../js/analisis.js"></script>
+
+</body>
+</html>
